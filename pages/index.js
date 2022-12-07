@@ -1,6 +1,32 @@
 import Head from 'next/head'
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+import React, { useState, useEffect } from 'react'; 
 
 export default function Home() {
+
+  const [messages, setMessages] = useState([]);
+useEffect(() => {
+
+  const echo = new Echo({
+    broadcaster: 'pusher',
+    key: '9f172cab513cee8dbb03',
+    cluster: 'eu',
+    forceTLS: true
+  });
+  // 4
+  echo
+  .channel('users')
+  .subscribed(() => {
+  console.log('You are subscribed');
+  })
+  // 5
+  .listen('.user.registered', (data) => {
+  // 6
+  setMessages([...messages, data]);
+  });
+  }, []);
+
   return (
     <div className="container">
       <Head>
@@ -10,9 +36,13 @@ export default function Home() {
 
       <main>
         <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          New Messages
         </h1>
-
+        <ul>
+            {messages.map((message, index) =>  
+              <li key={index}>{message.data.user} {message.data.url}</li>      
+            )}    
+        </ul>
         <p className="description">
           Get started by editing <code>pages/index.js</code>
         </p>
